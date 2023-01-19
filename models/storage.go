@@ -6,7 +6,6 @@ import (
 	
 	"net/url"
 	"os"
-
 	"github.com/Azure/azure-storage-blob-go/azblob"
 )
 
