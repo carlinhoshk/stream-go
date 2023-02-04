@@ -6,10 +6,17 @@ import (
 	"os"
 
 	"github.com/carlinhoshk/stream-go/handlers"
+	
+	
 )
 
 func main() {
+	
+	http.HandleFunc("/upload", handlers.UploadHandler)
+
 	http.HandleFunc("/download", handlers.DownloadHandler)
+
+	http.HandleFunc("/delete", handlers.DeleteHandler)
 	
 	//http.HandleFunc("/transcode", handlers.TranscodeFFmpeg)
 	// Inicia o servidor na porta 9090

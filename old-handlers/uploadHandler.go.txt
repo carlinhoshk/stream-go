@@ -1,0 +1,53 @@
+package handlers
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"os"
+	"net/url"
+	
+
+	"github.com/Azure/azure-storage-blob-go/azblob"
+)
+	
+func UploadHandler(w http.ResponseWriter, r *http.Request) {
+	// Define as credenciais de armazenamento
+	accountName := "bloobstream"
+	accountKey := os.Getenv("TOKEN_AZURE_BLOB")
+	
+	// Define o nome do contêiner e do arquivo de vídeo
+	containerName := "cinema-storage"
+	videoFileName := r.URL.Query().Get("file")
+	
+	// Cria um ponto de extremidade de blob
+	credential, err := azblob.NewSharedKeyCredential(accountName, accountKey)
+	if err != nil {
+		fmt.Println("Erro ao criar as credenciais:", err)
+		return
+	}
+	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
+	url, _ := url.Parse(
+		fmt.Sprintf("https://%s.blob.core.windows.net/%s", accountName, containerName))
+	
+	// Abre o arquivo de vídeo
+	file, err := os.Open(videoFileName)
+	if err != nil {
+		fmt.Println("Erro ao abrir o arquivo de vídeo:", err)
+		return
+	}
+	defer file.Close()
+	
+	// Envia o arquivo para o blob
+	containerURL := azblob.NewContainerURL(*url, p)
+	blobURL := containerURL.NewBlockBlobURL(videoFileName)
+	_, err = azblob.UploadFileToBlockBlob(context.Background(), file, blobURL, azblob.UploadToBlockBlobOptions{
+		BlockSize:   4 * 1024 * 1024,
+		Parallelism: 16})
+	if err != nil {
+		fmt.Println("Erro ao fazer upload do arquivo:", err)
+		return
+	}
+	
+	fmt.Println("Upload do arquivo concluído com sucesso!")
+	}
